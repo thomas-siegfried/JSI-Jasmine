@@ -104,6 +104,14 @@ describe('AutoMocker',()=>{
         expect(person.firstname).toBeFalsy();
     });
 
+    it('calls mocked methods with correct values so that we can validate the call correctly',()=>{
+        var pMock = mkr.TypeT(LoginService);
+        var spy = pMock.Mock(p=>p.Login).and.returnValue(true);
+        var svc = mkr.ResolveT(LoginService);
+        expect(svc.Login('test','method')).toBeTrue();
+        expect(spy).toHaveBeenCalledWith('test','method');
+    });
+
     it('can infer constructor types using the TypeT method',()=>{
         var pMock=mkr.TypeT(Person);
         pMock.Stub();

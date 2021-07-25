@@ -51,7 +51,7 @@ export class AutoMocker{
     Mock(key:any,Method:string):jasmine.Spy{
         var spy = jasmine.createSpy();
         var pxy = this.injector.Proxy(key);
-        pxy.fn(Method).instead((obj,name,args)=>spy())
+        pxy.fn(Method).instead((obj,name,args)=>spy(...args))
         return spy;
     }
 

@@ -93,10 +93,12 @@ export class AutoMocker{
 export interface Func<T>{
     (t:T):any;
 }
+export interface Func2<T,K>{
+    (t:T):K;
+}
 
 export class TypeMocker<T>{
     constructor(private key:any,private mocker:AutoMocker){
-
     }
 
     //All of the objects methods will return null;
@@ -110,12 +112,29 @@ export class TypeMocker<T>{
      
     }
 
+    MockT<K>(method:(t:T)=>()=>K):jasmine.Spy<()=>K>{
+        var fn =this.parseFunction(method);
+        return this.mocker.Mock(this.key,this.GetMember(fn)) as jasmine.Spy<()=>K>; 
+    }
+
     Get(prop:string|Func<T>):jasmine.Spy{
         return this.mocker.Get(this.key,this.GetMember(prop));
     }
 
+    GetT<K>(prop:(t:T)=>K):jasmine.Spy<()=>K>{
+        var fn =this.parseFunction(prop);
+        return this.mocker.Get(this.key,this.GetMember(fn)) as jasmine.Spy<()=>K>; 
+    }
+
     Set(prop:string|Func<T>):jasmine.Spy{
         return this.mocker.Set(this.key,this.GetMember(prop));
+    }
+
+    /*Do not create the object, return an instance based on prototype and stub all methods*/
+    PureProxy(autoProp:boolean=false){
+        this.mocker.injector.RegisterOptions({Key:this.key,Factory:()=>Object.create(this.key.prototype)});
+        this.Stub(autoProp);
+        return this;
     }
 
     private GetMember(member:string|Func<T>){

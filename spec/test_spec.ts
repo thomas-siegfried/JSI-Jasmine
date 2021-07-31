@@ -1,6 +1,6 @@
-import {Person,LoginModel,LoginService, LoginValidator} from './sampleTypes';
+import {Person,LoginModel,LoginService, LoginValidator, ClassIDontWantToCreateInMyTest} from './sampleTypes';
 import {AutoMocker} from '../src/index'; 
-import {Root, Injector} from '@thomas-siegfried/jsi';
+
 describe('AutoMocker',()=>{
     var mkr:AutoMocker;
     beforeEach(()=>{
@@ -123,5 +123,25 @@ describe('AutoMocker',()=>{
         pMock.Stub();
         pMock.Mock(p=>p.IsValid).and.returnValue(true);
         mkr.ResolveT(LoginModel);
+    });
+
+    it('can create pureProxies with mocked functions without creating the object',()=>{
+        var pMock=mkr.TypeT(ClassIDontWantToCreateInMyTest);
+        pMock.PureProxy(false).Mock(t=>t.ThrowError).and.returnValue(1);
+        var obj = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+        expect(obj.ThrowError()).toBe(1);
+    });
+
+    it('can infer types from mocked props and methods',()=>{
+        //this is not really a test, just a reminder
+        var lmMock = mkr.TypeT(LoginModel);
+        lmMock.MockT((m)=>m.Submit).and.returnValue(true); //cannot specifiy a non-boolean
     })
+
+    it('can infer typed spies for properties',()=>{
+        var pMock = mkr.TypeT(LoginModel);
+        pMock.GetT(m=>m.username).and.returnValue("test");
+    })
+
+
 });

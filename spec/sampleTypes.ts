@@ -33,6 +33,15 @@ export class LoginValidator{
     }
 }
 
+export class ClassIDontWantToCreateInMyTest{
+    constructor(){
+        throw new Error('Dont call this');
+    }
+    ThrowError():number{
+        throw new Error('Dont call this either');
+    }
+}
+
 @Inject()
 export class LoginModel{
     constructor(private svcLogin:LoginService,private validator:LoginValidator){

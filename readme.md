@@ -53,6 +53,15 @@ Configure a Mock object using TypeMocker<T>. The Mock,Get,Set methods will retur
     //all these methods return a jasmine spy
     expect(spy).toHaveBeenCalled();
 ```
+
+### Pure Mock Objects
+When mock objects are injected, they are still created by the JSI Injector, meaning dependencies are also creatd, and constructors are still run.  This is sometimes a problem we want to avoid.  A PureProxy solves this by registering a Object based on the prototype of the provided constructor function. The Mock can be configured as any other, but the object will not be created and no dependencies will be resolved
+
+```typescript
+    mok:AutoMocker = new AutoMocker();
+    var tm = mok.Type<MyType>(MyType).PureProxy();
+```
+
 ### Sample Unit Test
 ```typescript
 describe('Controller',()=>{

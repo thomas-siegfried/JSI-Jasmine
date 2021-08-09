@@ -143,5 +143,23 @@ describe('AutoMocker',()=>{
         pMock.GetT(m=>m.username).and.returnValue("test");
     })
 
+    it('can isolate a type so that all non-isolated types are pure proxies',()=>{
+        mkr.PureIsolate(LoginModel);
+        //this should be a pure mock
+        //i can create it
+        var tst = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+        //properties return null
+        expect(tst.ThrowError()).toBeNull();
+    });
+
+    it('pure isolate proxies can still be mocked',()=>{
+        mkr.PureIsolate(LoginModel);
+        mkr.TypeT(ClassIDontWantToCreateInMyTest).MockT(c=>c.DummyMethod).and.returnValue(5);
+        //this should be a pure mock
+        //i can create it
+        var tst = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+        //methods return null
+        expect(tst.DummyMethod()).toBe(5);
+    });
 
 });

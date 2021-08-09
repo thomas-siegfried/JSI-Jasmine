@@ -40,6 +40,9 @@ export class ClassIDontWantToCreateInMyTest{
     ThrowError():number{
         throw new Error('Dont call this either');
     }
+    DummyMethod():number{
+        throw new Error('not implemented');
+    }
 }
 
 @Inject()

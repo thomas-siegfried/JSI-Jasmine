@@ -79,13 +79,39 @@ export class AutoMocker{
         return spy;
     }
 
-    Isolate(key:any|any[]){
-        if(Array.isArray(key)){
-            key.forEach(k=>this.injector.Proxy(k));
-        }else{
-            this.injector.Proxy(key);
+    private isolatedTypes:any[];
+    PureIsolate(key:any|any[]){
+        if(!Array.isArray(key)){
+            key=[key];
         }
+        if(!this.isolatedTypes){
+            this.isolatedTypes=[];
+            this.injector.callbacks.Resolve=(key,stack)=>{
+                //anything that gets requested is a pure proxy unless it is on the isolate list
+                if(this.isolatedTypes.indexOf(key)==-1 && key.prototype){
+                    this.PureProxy(key,true);
+                }
+            };
+        }
+        this.isolatedTypes.push();
+    }
+    Isolate(key:any|any[]){
+        if(!Array.isArray(key)){
+            key=[key];
+        }
+        //proxy all isolated types with no config (effectively not proxied)
+       key.forEach(k=>this.injector.Proxy(k));
+
         this.Stub(WILDCARD,true);     //all methods return null
+    }
+    //register a key to a factory returning dummy object based on key's prototype
+    //this only works if the key is a constructor 
+    PureProxy(key:any,autoProp:boolean){
+        if(!key.prototype){
+            throw new Error()
+        }
+        this.injector.RegisterOptions({Key:key,Factory:()=>Object.create(key.prototype)});
+        this.Stub(key,autoProp);
     }
 
 }
@@ -132,8 +158,7 @@ export class TypeMocker<T>{
 
     /*Do not create the object, return an instance based on prototype and stub all methods*/
     PureProxy(autoProp:boolean=false){
-        this.mocker.injector.RegisterOptions({Key:this.key,Factory:()=>Object.create(this.key.prototype)});
-        this.Stub(autoProp);
+        this.mocker.PureProxy(this.key,autoProp);
         return this;
     }
 

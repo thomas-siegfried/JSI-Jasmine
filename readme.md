@@ -1,8 +1,8 @@
-# JS-Inject.Jasmine
-js-inject.jasmine is an extension to the js-inject library designed to facilitate unit testing with Jasmine and JS-Inject.
+# jsi.Jasmine
+jsi.jasmine is an extension to the jsi library designed to facilitate unit testing with Jasmine and jsi.
 ## Installing
 ```shell
-npm i js-inject.jasmine
+npm i @thomas-siegfried\jsi.jasmine
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ class DbService{
 ### Stubs and Isolation
 When unit testing, we generally want a to a single class, with other related classes being fakes.
 
-AutoMocker can Isolate a given type. This type will be created normally by JS-Inject, all other types will be created as mocks.  The mock objects will by default return null from all methods and properties will be automatic, meaning they will retain any values they are set to in the test.
+AutoMocker can Isolate a given type. This type will be created normally by jsi, all other types will be created as mocks.  The mock objects will by default return null from all methods and properties will be automatic, meaning they will retain any values they are set to in the test.
 
 ```typescript 
     mok:AutoMocker = new AutoMocker();

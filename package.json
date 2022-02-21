@@ -5,7 +5,9 @@
   "main": "dist/src/index.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx gulp test",
+    "build": "npx gulp",
+    "watch": "npx gulp watch"
   },
   "files": [
     "dist/src/**/*.js",
@@ -23,7 +25,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@thomas-siegfried/jsi": "^0.1.1",
+    "@thomas-siegfried/jsi": "^0.2.1",
     "jasmine": "^3.5.0"
   }
 }

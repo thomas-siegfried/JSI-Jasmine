@@ -187,4 +187,17 @@ describe("AutoMocker", () => {
     //methods return null
     expect(tst.DummyMethod()).toBe(5);
   });
+
+  it("mock methods with params can be mocked using MockT", () => {
+    mkr.PureIsolate(LoginModel);
+    mkr
+      .TypeT(ClassIDontWantToCreateInMyTest)
+      .MockT((c) => c.ParamMethod)
+      .and.returnValue(5);
+    //this should be a pure mock
+    //i can create it
+    var tst = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+    //methods return null
+    expect(tst.ParamMethod(0)).toBe(5);
+  });
 });

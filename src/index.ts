@@ -137,7 +137,7 @@ export class TypeMocker<T> {
     return this.mocker.Mock(this.key, this.GetMember(method));
   }
 
-  MockT<K>(method: (t: T) => () => K): jasmine.Spy<() => K> {
+  MockT<K>(method: (t: T) => (...args: any[]) => K): jasmine.Spy<() => K> {
     var fn = this.parseFunction(method);
     return this.mocker.Mock(this.key, this.GetMember(fn)) as jasmine.Spy<
       () => K

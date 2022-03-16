@@ -1,6 +1,6 @@
 {
   "name": "@thomas-siegfried/jsi.jasmine",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "",
   "main": "dist/src/index.js",
   "types": "dist/types/index.d.ts",
@@ -24,8 +24,9 @@
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
-  "dependencies": {
-    "@thomas-siegfried/jsi": "^0.2.1",
-    "jasmine": "^3.5.0"
-  }
+  "peerDependencies": {
+    "@thomas-siegfried/jsi": ">=0.2.1",
+    "jasmine": ">=3.5.0"
+  },
+  "dependencies": {}
 }

@@ -46,7 +46,7 @@ export class ClassIDontWantToCreateInMyTest {
   }
 }
 
-@Inject()
+@Inject(LoginService, LoginValidator)
 export class LoginModel {
   constructor(
     private svcLogin: LoginService,

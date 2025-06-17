@@ -6,14 +6,15 @@ export class AutoMocker {
       this.injector = new Injector();
     }
   }
-
-  Resolve<T>(key: any) {
+  Resolve<T>(key: Constructor<T>): T;
+  Resolve<T>(key: any): T;
+  Resolve<T = any>(key: any) {
     return this.injector.Resolve<T>(key);
   }
 
-  ResolveT<T>(key: Constructor<T>) {
-    return this.injector.Resolve<T>(key);
-  }
+  // ResolveT<T>(key: Constructor<T>) {
+  //   return this.injector.Resolve<T>(key);
+  // }
   //configure a type for auto prop behavior
   //we can set any property and get back the value we set
   AutoProp(key: any) {
@@ -54,14 +55,15 @@ export class AutoMocker {
     pxy.fn(Method).instead((obj, name, args) => spy(...args));
     return spy;
   }
-
-  Type<T>(key: any): TypeMocker<T> {
+  Type<T>(key: Constructor<T>): TypeMocker<T>;
+  Type<T>(key: any): TypeMocker<T>;
+  Type<T>(key: Constructor<T> | any): TypeMocker<T> {
     return new TypeMocker<T>(key, this);
   }
 
-  TypeT<T>(key: Constructor<T>): TypeMocker<T> {
-    return new TypeMocker<T>(key, this);
-  }
+  // TypeT<T>(key: Constructor<T>): TypeMocker<T> {
+  //   return new TypeMocker<T>(key, this);
+  // }
 
   //override the get result of a specific property
   Get(key: any, prop: string): jasmine.Spy {
@@ -117,12 +119,23 @@ export class AutoMocker {
   }
 }
 
-export interface Func<T> {
-  (t: T): any;
+export interface Func<T, K = any> {
+  (t: T): K;
 }
 export interface Func2<T, K> {
   (t: T): K;
 }
+
+export interface ReturnFunc<K> {
+  (...args: any[]): K;
+}
+
+interface TypedFunction<P extends any[], R> {
+  (...args: P): R;
+}
+// interface Action<T> {
+//   (t: T): void;
+// }
 
 export class TypeMocker<T> {
   constructor(private key: any, private mocker: AutoMocker) {}
@@ -133,29 +146,35 @@ export class TypeMocker<T> {
     return this;
   }
   //mock a specific method, returns the spy, and thus breaks the fluency
-  Mock(method: string | Func<T>): jasmine.Spy {
-    return this.mocker.Mock(this.key, this.GetMember(method));
+  Mock<K = any, P extends any[] = any[]>(
+    method: string | Func<T, TypedFunction<P, K>>
+  ): jasmine.Spy<(...args: P) => K> {
+    return this.mocker.Mock(this.key, this.GetMember(method)) as jasmine.Spy<
+      (...args: P) => K
+    >;
   }
 
-  MockT<K>(method: (t: T) => (...args: any[]) => K): jasmine.Spy<() => K> {
-    var fn = this.parseFunction(method);
-    return this.mocker.Mock(this.key, this.GetMember(fn)) as jasmine.Spy<
+  // MockT<K>(method: (t: T) => (...args: any[]) => K): jasmine.Spy<() => K> {
+  //   var fn = this.parseFunction(method);
+  //   return this.mocker.Mock(this.key, this.GetMember(fn)) as jasmine.Spy<
+  //     () => K
+  //   >;
+  // }
+
+  Get<K = any>(prop: string | Func<T, K>): jasmine.Spy<() => K> {
+    return this.mocker.Get(this.key, this.GetMember(prop)) as jasmine.Spy<
       () => K
     >;
   }
 
-  Get(prop: string | Func<T>): jasmine.Spy {
-    return this.mocker.Get(this.key, this.GetMember(prop));
-  }
+  // GetT<K>(prop: (t: T) => K): jasmine.Spy<() => K> {
+  //   var fn = this.parseFunction(prop);
+  //   return this.mocker.Get(this.key, this.GetMember(fn)) as jasmine.Spy<
+  //     () => K
+  //   >;
+  // }
 
-  GetT<K>(prop: (t: T) => K): jasmine.Spy<() => K> {
-    var fn = this.parseFunction(prop);
-    return this.mocker.Get(this.key, this.GetMember(fn)) as jasmine.Spy<
-      () => K
-    >;
-  }
-
-  Set(prop: string | Func<T>): jasmine.Spy {
+  Set<K = any>(prop: string | Func<T, K>): jasmine.Spy<(T) => void> {
     return this.mocker.Set(this.key, this.GetMember(prop));
   }
 

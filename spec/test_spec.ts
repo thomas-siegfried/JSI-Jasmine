@@ -116,59 +116,59 @@ describe("AutoMocker", () => {
   });
 
   it("calls mocked methods with correct values so that we can validate the call correctly", () => {
-    var pMock = mkr.TypeT(LoginService);
+    var pMock = mkr.Type(LoginService);
     var spy = pMock.Mock((p) => p.Login).and.returnValue(true);
-    var svc = mkr.ResolveT(LoginService);
+    var svc = mkr.Resolve(LoginService);
     expect(svc.Login("test", "method")).toBeTrue();
     expect(spy).toHaveBeenCalledWith("test", "method");
   });
 
-  it("can infer constructor types using the TypeT method", () => {
-    var pMock = mkr.TypeT(Person);
+  it("can infer constructor types using the Type method", () => {
+    var pMock = mkr.Type(Person);
     pMock.Stub();
     pMock.Get((p) => p.firstname).and.returnValue("test");
   });
 
   it("can infer constructor types of constructors with parameters", () => {
-    var pMock = mkr.TypeT(LoginModel);
+    var pMock = mkr.Type(LoginModel);
     pMock.Stub();
     pMock.Mock((p) => p.IsValid).and.returnValue(true);
-    mkr.ResolveT(LoginModel);
+    mkr.Resolve(LoginModel);
   });
 
   it("can create pureProxies with mocked functions without creating the object", () => {
-    var pMock = mkr.TypeT(ClassIDontWantToCreateInMyTest);
+    var pMock = mkr.Type(ClassIDontWantToCreateInMyTest);
     pMock
       .PureProxy(false)
       .Mock((t) => t.ThrowError)
       .and.returnValue(1);
-    var obj = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+    var obj = mkr.Resolve(ClassIDontWantToCreateInMyTest);
     expect(obj.ThrowError()).toBe(1);
   });
 
   it("can infer types from mocked props and methods", () => {
     //this is not really a test, just a reminder
-    var lmMock = mkr.TypeT(LoginModel);
-    lmMock.MockT((m) => m.Submit).and.returnValue(true); //cannot specifiy a non-boolean
+    var lmMock = mkr.Type(LoginModel);
+    lmMock.Mock((m) => m.Submit).and.returnValue(true); //cannot specifiy a non-boolean
   });
 
   it("can infer typed spies for properties", () => {
-    var pMock = mkr.TypeT(LoginModel);
-    pMock.GetT((m) => m.username).and.returnValue("test");
+    var pMock = mkr.Type(LoginModel);
+    pMock.Get((m) => m.username).and.returnValue("test");
   });
 
   it("can isolate a type so that all non-isolated types are pure proxies", () => {
     mkr.PureIsolate(LoginModel);
     //this should be a pure mock
     //i can create it
-    var tst = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+    var tst = mkr.Resolve(ClassIDontWantToCreateInMyTest);
     //properties return null
     expect(tst.ThrowError()).toBeNull();
   });
 
   it("returns non proxied instances of isolated types", () => {
     mkr.PureIsolate(LoginModel);
-    var login = mkr.ResolveT(LoginModel);
+    var login = mkr.Resolve(LoginModel);
     login.username = "test";
     login.password = "test";
     expect(login.username).toBe("test");
@@ -178,26 +178,96 @@ describe("AutoMocker", () => {
   it("pure isolate proxies can still be mocked", () => {
     mkr.PureIsolate(LoginModel);
     mkr
-      .TypeT(ClassIDontWantToCreateInMyTest)
-      .MockT((c) => c.DummyMethod)
+      .Type(ClassIDontWantToCreateInMyTest)
+      .Mock((c) => c.DummyMethod)
       .and.returnValue(5);
     //this should be a pure mock
     //i can create it
-    var tst = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+    var tst = mkr.Resolve(ClassIDontWantToCreateInMyTest);
     //methods return null
     expect(tst.DummyMethod()).toBe(5);
   });
 
-  it("mock methods with params can be mocked using MockT", () => {
+  it("mock methods with params can be mocked using Mock", () => {
     mkr.PureIsolate(LoginModel);
     mkr
-      .TypeT(ClassIDontWantToCreateInMyTest)
-      .MockT((c) => c.ParamMethod)
+      .Type(ClassIDontWantToCreateInMyTest)
+      .Mock((c) => c.ParamMethod)
       .and.returnValue(5);
     //this should be a pure mock
     //i can create it
-    var tst = mkr.ResolveT(ClassIDontWantToCreateInMyTest);
+    var tst = mkr.Resolve(ClassIDontWantToCreateInMyTest);
     //methods return null
     expect(tst.ParamMethod(0)).toBe(5);
+  });
+
+  it("can configure mocks after an object is requested", () => {
+    mkr.PureIsolate(LoginModel);
+    const serviceName = "mockvalue";
+
+    const model = mkr.Resolve(LoginModel);
+    var mock = mkr.Type(LoginService);
+    mock.Mock((f) => f.Login).and.returnValue(true);
+    mock.Get((f) => f.ServiceName).and.returnValue(serviceName);
+
+    expect(model.GetServiceName()).toBe(serviceName);
+  });
+
+  it("can mock types keyed as strings", () => {
+    mkr.injector.Register("test", [], () => {
+      return { name: "myvalue" };
+    });
+
+    mkr.Type<any>("test").Get("name").and.returnValue("mockvalue");
+
+    var obj = mkr.Resolve<any>("test");
+    expect(obj.name).toBe("mockvalue");
+  });
+  it("can mock types keyed as strings a different way", () => {
+    mkr.injector.Register("test", [], LoginService);
+
+    mkr
+      .Type<LoginService>("test")
+      .Get((s) => s.ServiceName)
+      .and.returnValue("mockvalue");
+
+    var obj = mkr.Resolve<LoginService>("test");
+    expect(obj.ServiceName).toBe("mockvalue");
+  });
+  describe("New Generics", () => {
+    it("can infer types using Mock()", () => {
+      mkr
+        .Type(LoginService)
+        .Mock((s) => s.Login)
+        .and.returnValue(true);
+    });
+    it("can force the type to be different (any)", () => {
+      mkr
+        .Type(LoginService)
+        .Mock<any>((s) => s.Login)
+        .and.returnValue(3);
+    });
+    it("can still use a string based mock method", () => {
+      mkr.Type(LoginService).Mock("login").and.returnValue(3);
+    });
+    it("can specify a typefor a string based mock", () => {
+      mkr.Type(LoginService).Mock<boolean>("login").and.returnValue(true);
+    });
+    it("Can infer types in Type()", () => {
+      mkr
+        .Type(LoginService)
+        .Mock((l) => l.Login)
+        .and.returnValue(true);
+    });
+    it("Can infer types in Resolve", () => {
+      const svc = mkr.Resolve(LoginService);
+      expect(svc).toBeInstanceOf(LoginService);
+    });
+    it("Can use Set() to verify setters", () => {
+      var setSpy = mkr.Type(LoginService).Set((s) => s.ServiceName);
+      const svc = mkr.Resolve(LoginService);
+      svc.ServiceName = "test";
+      expect(setSpy).toHaveBeenCalledWith("test");
+    });
   });
 });

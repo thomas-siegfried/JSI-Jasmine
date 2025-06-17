@@ -81,7 +81,8 @@ export class AutoMocker {
   }
 
   private isolatedTypes: any[];
-  PureIsolate(key: any | any[]) {
+
+  Isolate(key: any | any[]) {
     if (!Array.isArray(key)) {
       key = [key];
     }
@@ -95,15 +96,6 @@ export class AutoMocker {
       };
     }
     this.isolatedTypes.push(...key);
-  }
-  Isolate(key: any | any[]) {
-    if (!Array.isArray(key)) {
-      key = [key];
-    }
-    //proxy all isolated types with no config (effectively not proxied)
-    key.forEach((k) => this.injector.Proxy(k));
-
-    this.Stub(WILDCARD, true); //all methods return null
   }
   //register a key to a factory returning dummy object based on key's prototype
   //this only works if the key is a constructor

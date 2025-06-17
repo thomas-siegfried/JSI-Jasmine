@@ -7,6 +7,14 @@ import {
 } from "./sampleTypes";
 import { AutoMocker } from "../src/index";
 
+function isProxy(obj: any): boolean {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    Object.prototype.toString.call(obj) === "[object Proxy]"
+  );
+}
+
 describe("AutoMocker", () => {
   var mkr: AutoMocker;
   beforeEach(() => {
@@ -158,7 +166,7 @@ describe("AutoMocker", () => {
   });
 
   it("can isolate a type so that all non-isolated types are pure proxies", () => {
-    mkr.PureIsolate(LoginModel);
+    mkr.Isolate(LoginModel);
     //this should be a pure mock
     //i can create it
     var tst = mkr.Resolve(ClassIDontWantToCreateInMyTest);
@@ -167,7 +175,7 @@ describe("AutoMocker", () => {
   });
 
   it("returns non proxied instances of isolated types", () => {
-    mkr.PureIsolate(LoginModel);
+    mkr.Isolate(LoginModel);
     var login = mkr.Resolve(LoginModel);
     login.username = "test";
     login.password = "test";
@@ -176,7 +184,7 @@ describe("AutoMocker", () => {
   });
 
   it("pure isolate proxies can still be mocked", () => {
-    mkr.PureIsolate(LoginModel);
+    mkr.Isolate(LoginModel);
     mkr
       .Type(ClassIDontWantToCreateInMyTest)
       .Mock((c) => c.DummyMethod)
@@ -189,7 +197,7 @@ describe("AutoMocker", () => {
   });
 
   it("mock methods with params can be mocked using Mock", () => {
-    mkr.PureIsolate(LoginModel);
+    mkr.Isolate(LoginModel);
     mkr
       .Type(ClassIDontWantToCreateInMyTest)
       .Mock((c) => c.ParamMethod)
@@ -202,7 +210,7 @@ describe("AutoMocker", () => {
   });
 
   it("can configure mocks after an object is requested", () => {
-    mkr.PureIsolate(LoginModel);
+    mkr.Isolate(LoginModel);
     const serviceName = "mockvalue";
 
     const model = mkr.Resolve(LoginModel);
@@ -268,6 +276,24 @@ describe("AutoMocker", () => {
       const svc = mkr.Resolve(LoginService);
       svc.ServiceName = "test";
       expect(setSpy).toHaveBeenCalledWith("test");
+    });
+    it("Can resolve a PureProxied type twice (checking)", () => {
+      mkr.Isolate(LoginModel);
+      const s1 = mkr.Resolve(LoginService);
+      const s2 = mkr.Resolve(LoginService);
+      expect(s1).not.toBeFalsy();
+      expect(s2).not.toBeFalsy();
+    });
+
+    it("still allows spying on Isolated types", () => {
+      mkr.Isolate(LoginModel);
+      const spy = mkr
+        .Type(LoginModel)
+        .Mock((m) => m.GetServiceName)
+        .and.callThrough();
+      const svc = mkr.Resolve(LoginModel);
+      svc.GetServiceName();
+      expect(spy).toHaveBeenCalled();
     });
   });
 });

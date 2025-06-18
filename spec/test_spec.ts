@@ -277,6 +277,20 @@ describe("AutoMocker", () => {
       svc.ServiceName = "test";
       expect(setSpy).toHaveBeenCalledWith("test");
     });
+
+    it("can mock getter and setter of same property", () => {
+      mkr.Isolate(LoginModel);
+      var m = mkr.Type(LoginService);
+      var setSpy = m.Set((s) => s.ServiceName);
+      var getSpy = m.Get((s) => s.ServiceName);
+      getSpy.and.returnValue("test");
+
+      var svc = mkr.Resolve(LoginService);
+      expect(svc.ServiceName).toBe("test");
+      svc.ServiceName = "newvalue";
+
+      expect(setSpy).toHaveBeenCalledWith("newvalue");
+    });
     it("Can resolve a PureProxied type twice (checking)", () => {
       mkr.Isolate(LoginModel);
       const s1 = mkr.Resolve(LoginService);
@@ -294,6 +308,103 @@ describe("AutoMocker", () => {
       const svc = mkr.Resolve(LoginModel);
       svc.GetServiceName();
       expect(spy).toHaveBeenCalled();
+    });
+  });
+  describe("Setup Methods", () => {
+    it("allows configuration method off of TypeMocker", () => {
+      const mLoginSvc = mkr
+        .Isolate(LoginModel)
+        .Type(LoginService)
+        .Configure((sm) => {
+          sm.Get((m) => m.ServiceName).and.returnValue("5");
+          sm.Mock((m) => m.Login).and.returnValue(true);
+        });
+
+      const svc = mkr.Resolve(LoginService);
+      expect(svc.ServiceName).toBe("5");
+      expect(svc.Login("", "")).toBe(true);
+    });
+    it("allows configuration method as a parameter", () => {
+      const mLoginSvc = mkr.Isolate(LoginModel).Type(LoginService, (sm) => {
+        var s = sm.Get((m) => m.ServiceName).and.returnValue("5");
+        sm.Mock((m) => m.Login).and.returnValue(true);
+      });
+      const svc = mkr.Resolve(LoginService);
+
+      expect(svc.ServiceName).toBe("5");
+      expect(svc.Login("", "")).toBe(true);
+    });
+
+    it("allows us to do verification at the end by recreating the TypeMocker", () => {
+      const mLoginSvc = mkr.Isolate(LoginModel).Type(LoginService, (sm) => {
+        sm.Get((m) => m.ServiceName).and.returnValue("5");
+        sm.Mock((m) => m.Login).and.returnValue(true);
+      });
+      const model = mkr.Resolve(LoginModel);
+      const name = model.GetServiceName();
+      expect(name).toBe("5");
+      expect(
+        mkr.Type(LoginService).Get((m) => m.ServiceName)
+      ).toHaveBeenCalled();
+      // mkr.Type(LoginService, (sm) => {
+      //   expect(sm.Get((m) => m.ServiceName)).toHaveBeenCalled();
+      // });
+    });
+    it("allows us to configure expectations with the spy", () => {
+      mkr.Isolate(LoginModel).Type(LoginService, (sm) => {
+        sm.Get((m) => m.ServiceName).and.returnValue("5");
+        //sm.Mock((m) => m.Login).and.returnValue(true);
+        sm.Mock(
+          (m) => m.Login,
+          (spy, verify) => {
+            spy.and.returnValue(true);
+            verify((e) => e.toHaveBeenCalled());
+          }
+        );
+      });
+      const model = mkr.Resolve(LoginModel);
+      const name = model.GetServiceName();
+      model.username = "1";
+      model.password = "2";
+      model.Submit();
+      expect(name).toBe("5");
+      mkr.VerifyAll();
+    });
+
+    it("allows us to configure spies for Getters", () => {
+      mkr.Type(LoginService, (m) => {
+        m.Get(
+          (s) => s.ServiceName,
+          (s, v) => {
+            s.and.returnValue("test");
+            v((e) => e.toHaveBeenCalled());
+          }
+        );
+      });
+      let svc = mkr.Resolve(LoginService);
+      expect(svc.ServiceName).toBe("test");
+      mkr.VerifyAll();
+    });
+
+    it("allows us to configure spies for Setters", () => {
+      mkr.Type(LoginService, (m) => {
+        m.Set(
+          (s) => s.ServiceName,
+          (s, v) => {
+            v((e) => e.toHaveBeenCalledWith("new value"));
+          }
+        );
+      });
+      let svc = mkr.Resolve(LoginService);
+      svc.ServiceName = "new value";
+      mkr.VerifyAll();
+    });
+
+    it("returns the same spy on multiple calls to Mock", () => {
+      const svcMock = mkr.Type(LoginService);
+      let s1 = svcMock.Mock((s) => s.Login);
+      let s2 = svcMock.Mock((s) => s.Login);
+      expect(s1).toBe(s2);
     });
   });
 });

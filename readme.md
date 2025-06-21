@@ -5,7 +5,7 @@ jsi.jasmine is an extension to the jsi library designed to facilitate unit testi
 ## Installing
 
 ```shell
-npm i @thomas-siegfried\jsi.jasmine
+npm i @thomas-siegfried/jsi.jasmine
 ```
 
 ## Usage

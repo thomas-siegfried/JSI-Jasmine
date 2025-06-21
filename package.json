@@ -2,26 +2,22 @@
   "name": "@thomas-siegfried/jsi.jasmine",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "scripts": {
-    "test": "npx gulp test",
-    "build": "npx gulp",
-    "watch": "npx gulp watch",
-    "clean": "npx gulp clean"
+    "test": "npx tsx ./node_modules/jasmine/bin/jasmine",
+    "build": "npx tsc -p tsconfig.build.json",
+    "clean": "npx rimraf dist"
   },
   "files": [
-    "dist/src/**/*.js",
+    "dist/**/*.js",
     "dist/types/**/*.d.ts"
   ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/jasmine": "^3.5.11",
-    "gulp": "^5.0.1",
-    "gulp-clean": "^0.4.0",
-    "gulp-jasmine": "^4.0.0",
-    "gulp-typescript": "^6.0.0-alpha.1",
+    "rimraf": "^6.0.1",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },

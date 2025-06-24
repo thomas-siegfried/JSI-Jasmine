@@ -6,8 +6,8 @@ export class AutoMocker {
       this.injector = new Injector();
     }
   }
-  Resolve<T>(key: Constructor<T>): T;
-  Resolve<T>(key: any): T;
+  Resolve<T>(key: Constructor<T> | FactoryMethod<T>): T;
+  Resolve<T>(key: string): T;
   Resolve<T = any>(key: any) {
     return this.injector.Resolve<T>(key);
   }
@@ -281,6 +281,6 @@ export class TypeMocker<T> {
   }
 }
 
-interface Constructor<T> {
-  new (...args: any[]): T;
-}
+export type FactoryMethod<T> = (...params: any[]) => T;
+
+export type Constructor<T> = new (...args: any[]) => T;

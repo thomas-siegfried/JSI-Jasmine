@@ -4,8 +4,8 @@ import {
   LoginService,
   LoginValidator,
   ClassIDontWantToCreateInMyTest,
-} from "./sampleTypes";
-import { AutoMocker } from "../src/index";
+} from "./sampleTypes.js";
+import { AutoMocker } from "../src/index.js";
 
 function isProxy(obj: any): boolean {
   return (

@@ -1,9 +1,16 @@
 {
   "name": "@thomas-siegfried/jsi.jasmine",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "test": "npx tsx ./node_modules/jasmine/bin/jasmine",
     "build": "npx tsc -p tsconfig.build.json",
@@ -22,7 +29,7 @@
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
-    "@thomas-siegfried/jsi": ">=0.2.1",
+    "@thomas-siegfried/jsi": ">=2.0.0",
     "jasmine": ">=3.5.0"
   }
 }

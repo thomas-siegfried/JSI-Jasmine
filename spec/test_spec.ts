@@ -20,6 +20,7 @@ describe("AutoMocker", () => {
   beforeEach(() => {
     mkr = new AutoMocker();
   });
+
   it("Can automock properties of a type", () => {
     mkr.AutoProp(Person);
     var person = mkr.Resolve<Person>(Person);

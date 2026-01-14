@@ -8,7 +8,7 @@ export class AutoMocker {
   }
   Resolve<T>(key: Constructor<T> | FactoryMethod<T>): T;
   Resolve<T>(key: string): T;
-  Resolve<T = any>(key: any) {
+  Resolve<T = any>(key: any): T {
     return this.injector.Resolve<T>(key);
   }
 
